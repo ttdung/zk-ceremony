@@ -37,7 +37,7 @@ fi
 ceremony_branch=$(ask_to_user "Please enter the name of the ceremony (and its branch default (ceremony/v3-circuits): " "v3-circuits")
 contributions_path=$(ask_to_user "Please enter the path to the folder to store the contributions files (by default './contributions'): " "./contributions")
 output_path=$(ask_to_user "Please enter the path to the folder to store the resulting files (by default './results'): " "./results")
-target_circuits=$(ask_to_user "Please enter the list of iden3 circuits to be used in the ceremony (by default 'authV3,credentialAtomicQueryV3,credentialAtomicQueryV3OnChain,linkedMultiQuery10'): " "authV3,credentialAtomicQueryV3,credentialAtomicQueryV3OnChain,linkedMultiQuery10")
+target_circuits=$(ask_to_user "Please enter the list of iden3 circuits to be used in the ceremony (by default 'authV3,credentialAtomicQueryV3,credentialAtomicQueryV3OnChain'): " "authV3,credentialAtomicQueryV3,credentialAtomicQueryV3OnChain")
 
 echo "TARGET_CIRCUITS=$target_circuits
 CEREMONY_BRANCH=ceremony/$ceremony_branch

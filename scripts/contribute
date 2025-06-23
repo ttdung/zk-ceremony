@@ -2,12 +2,11 @@
 # set -u
 # set -x
 
-GITHUB_REPO="legiangthanh/zk-ceremony"
+GITHUB_REPO="ttdung/zk-ceremony"
 
 intro_message() {
-
-    echo "Welcome to the zk-ceremony contribution process!"
     echo
+    echo "Welcome to the zk-ceremony contribution process 1!"
     echo "To start your contribution you need to provide the following information:"
     echo " - The github repository of the ceremony (by default '$GITHUB_REPO')"
     echo " - Login to your GitHub account (commits will use your github username)"
@@ -49,7 +48,7 @@ prompt_env_inputs() {
     git config --global user.email $CONTRIBUTOR_NAME@users.noreply.github.com
 
     repo_name=$(basename "$GITHUB_REPO")
-    git clone "https://github.com/legiangthanh/zk-ceremony.git" ./ceremony --branch $CEREMONY_BRANCH --depth 2 || {
+    git clone "https://github.com/ttdung/zk-ceremony.git" ./ceremony --branch $CEREMONY_BRANCH --depth 2 || {
         echo "Failed to clone forked repository"
         exit 1
     }
