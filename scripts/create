@@ -93,3 +93,4 @@ init_ceremony() {
 }
 
 init_ceremony $1
+

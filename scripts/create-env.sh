@@ -48,3 +48,11 @@ git checkout -b ceremony/$ceremony_branch &&
     git add -f ceremony.env &&
     git commit -m "Initialize ceremony" &&
     git push origin ceremony/$ceremony_branch
+
+# Ensure the repository is set explicitly in the PR creation command
+NEW_BRANCH_NAME=ceremony/$ceremony_branch
+MAIN_BRANCH=main
+gh pr create --repo "$GITHUB_REPO" --title "Contribution: from $NEW_BRANCH_NAME to '$MAIN_BRANCH' ceremony" --body "" --base "$MAIN_BRANCH" --head "$NEW_BRANCH_NAME" || {
+    echo "Failed to create pull request"
+    exit 1
+}
