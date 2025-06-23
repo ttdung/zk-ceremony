@@ -1,0 +1,80 @@
+#!/bin/bash
+
+#. /Users/thanhle/Work/support/zk-ceremony/ceremony.env
+. /Users/thanhle/Work/support/zk-ceremony/scripts/tools.sh
+# set -x
+
+finish_and_verify() {
+
+    contribution_path=$1
+    circuit_name=$2
+    local contribution_file="$contribution_path/CONTRIBUTIONS.md"
+
+    # get the last contribution zkey file from the contributions file
+    if [ ! -f "$contribution_file" ]; then
+        error "contribution file does not exists, is the ceremony initialized?"
+        exit 1
+    fi
+    last_contribution_file=$(get_last_contribution_file_path "$circuit_name" "$contribution_path")
+    last_contribution_hash=$(get_last_contribution_hash "$contribution_file")
+    output_path=$OUTPUT_PATH/$circuit_name
+
+    mkdir -p $output_path
+
+    if [ "$(get_file_hash "$last_contribution_file")" == "<check CONTRIBUTIONS.md file>" ]; then
+        error "no contributions"
+        exit 1
+    fi
+    if [ "$(get_file_hash "$last_contribution_file")" != "$last_contribution_hash" ]; then
+        error "the last contribution file has been modified, please check the CONTRIBUTIONS.md file"
+        exit 1
+    fi
+
+    #echo "snarkjs zkey verify $contribution_path/$circuit_name.r1cs $INPUT_PTAU_PATH $output_path/${circuit_name}_proving_key.zkey"
+    #snarkjs zkey verify $contribution_path/$circuit_name.r1cs $INPUT_PTAU_PATH $output_path/${circuit_name}_proving_key.zkey
+
+    snarkjs zkey beacon $last_contribution_file $output_path/${circuit_name}_proving_key.zkey 0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f 10 -n="Final Beacon phase2"
+
+    echo "snarkjs zkey verify $contribution_path/$circuit_name.r1cs $INPUT_PTAU_PATH $last_contribution_file"
+    snarkjs zkey verify $contribution_path/$circuit_name.r1cs $INPUT_PTAU_PATH $last_contribution_file
+
+    echo "snarkjs zkey export verificationkey $last_contribution_file $output_path/${circuit_name}_verification_key.json"
+    snarkjs zkey export verificationkey $last_contribution_file $output_path/${circuit_name}_verification_key.json
+}
+
+save_results() {
+    local contribution_path=$1
+    local circuit_name=$2
+    local output_path=$OUTPUT_PATH/$circuit_name
+    cp $contribution_path/$circuit_name.wasm $output_path/${circuit_name}.wasm
+    local wasm_hash=$(get_file_hash "$output_path/$circuit_name.wasm")
+    local pkey_hash=$(get_file_hash "$output_path/${circuit_name}_proving_key.zkey")
+    local vkey_hash=$(get_file_hash "$output_path/${circuit_name}_verification_key.json")
+
+    echo "# '$CEREMONY_BRANCH' ceremony results
+- [$output_path/$circuit_name.wasm](./$circuit_name.wasm) - \`$wasm_hash\`
+- [$output_path/${circuit_name}_proving_key.zkey](./${circuit_name}_proving_key.zkey) - \`$pkey_hash\`
+- [$output_path/${circuit_name}_verification_key.json](./${circuit_name}_verification_key.json) - \`$vkey_hash\`" >$output_path/RESULTS.md
+}
+
+finish_ceremony() {
+    echo -e "Welcome to the '$CEREMONY_BRANCH' zk-ceremony ends process!\n"
+    echo " - You are using '$INPUT_PTAU_PATH' as initial ptau file."
+    echo " - This script will finish the ceremony and verify the result."
+    echo " - The results and initial contribution will be stored in '$OUTPUT_PATH' folder."
+    echo " - The ceremony information and contributions will be stored in '$CONTRIBUTIONS_PATH' folder in CONTRIBUTIONSMD.md file of the specific cirtuit"
+    original_contribution_path="$CONTRIBUTIONS_PATH"
+    contribution_file_names=($(ls -1p $CONTRIBUTIONS_PATH | grep / | sed 's:/*$::'))
+    for circuit_name in "${contribution_file_names[@]}"; do
+        contribution_path="$original_contribution_path/$circuit_name"
+        # finish the ceremony and verify the result generating the proving key and
+        # the verification key
+        finish_and_verify "$contribution_path" "$circuit_name" || error "error finishing the ceremony or verifying the result"
+        # save the results in the results file with the hashes of the generated
+        # files
+        save_results "$contribution_path" "$circuit_name" || error "error saving the results"
+    done
+}
+
+INPUT_PTAU_PATH=/Users/thanhle/Work/support/zk-ceremony/circuits/powersOfTau28_hez_final_18.ptau
+finish_ceremony

@@ -1,0 +1,191 @@
+#!/bin/bash
+# set -u
+# set -x
+
+GITHUB_REPO="legiangthanh/zk-ceremony"
+
+intro_message() {
+
+    echo "Welcome to the zk-ceremony contribution process!"
+    echo
+    echo "To start your contribution you need to provide the following information:"
+    echo " - The github repository of the ceremony (by default '$GITHUB_REPO')"
+    echo " - Login to your GitHub account (commits will use your github username)"
+}
+
+prompt_env_inputs() {
+    # list on-going ceremonies
+    branches="$(curl -s -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/$GITHUB_REPO/pulls" |
+        jq '.[].head.ref' | tr -d '"' | grep ^ceremony | sort -u)"
+    echo
+    echo "Current on-going ceremonies:"
+    echo
+    echo "$branches"
+    echo
+    CEREMONY_BRANCH="$(echo "$branches" | head -n 1)"
+    
+    read -p "Enter the name of one of the 'on-going' ceremonies and branches shown above (default $CEREMONY_BRANCH): " BRANCH
+    if [ -n "$BRANCH" ]; then
+        CEREMONY_BRANCH="$BRANCH"
+    fi
+
+    read -p "Enter the name of the new bracnh (by default '$CEREMONY_BRANCH'): " NEW_BRANCH_NAME
+
+    echo "Now you need to login to your GitHub account to authenticate the process."
+    echo " - Don't worry, just copy the URL shown in the terminal and paste it in your browser."
+
+    gh auth login -p https -h github.com -w
+
+    echo
+    echo "Okey! Let's start. After you press enter, this script will fork the repo under your username,"
+    echo "open a PR against upstream, download required files, let you input your contribution (a random string),"
+    echo "and upload it to the PR. Noone else can contribute during this time, so you need to have fast, stable internet connection,"
+    echo "else your contribution process will fail due to an automatic timeout after a few minutes."
+    echo
+    read -p "Press enter to continue..."
+    echo
+    CONTRIBUTOR_NAME="$(gh api user --jq '.login')"
+    git config --global user.name $CONTRIBUTOR_NAME
+    git config --global user.email $CONTRIBUTOR_NAME@users.noreply.github.com
+
+    repo_name=$(basename "$GITHUB_REPO")
+    git clone "https://github.com/legiangthanh/zk-ceremony.git" ./ceremony --branch $CEREMONY_BRANCH --depth 2 || {
+        echo "Failed to clone forked repository"
+        exit 1
+    }
+
+    cd ./ceremony || {
+        echo "Failed to change directory"
+        exit 1
+    }
+
+    git checkout -b $NEW_BRANCH_NAME || {
+        echo "Failed to create a new branch with name $NEW_BRANCH_NAME"
+        exit 1
+    }
+
+    . /bin/tools.sh
+}
+
+check_contribute_env() {
+    CURRENT_CONTRIBUTION_FILE="$CONTRIBUTIONS_PATH/${1}_${NEW_BRANCH_NAME}.zkey"
+    if [ -e "$CURRENT_CONTRIBUTION_FILE" ]; then
+        echo "You've already contributed to this zk-ceremony in file $CURRENT_CONTRIBUTION_FILE"
+        echo "Contributing more than once is not allowed. Aborting..."
+        exit 1
+    fi
+
+    echo
+    while curl -s -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/$GITHUB_REPO/pulls" |
+        jq '.[].title' | grep Contribution | grep $CEREMONY_BRANCH; do
+        echo "Oops, someone else started their contribution to this ceremony almost exactly at the same time as you."
+        echo "They will finish in a few minutes max, so let's sleep 30s and check again."
+        sleep 30
+    done
+
+    # touch .lock && git add .lock && git commit .lock -m "Prevent other contributions" && git push origin $CEREMONY_BRANCH
+    # git remote update -p
+    # git reset --hard upstream/$CEREMONY_BRANCH # discard .lock commit
+}
+
+make_contribution() {
+    CONTRIBUTION_RANDOM_INPUT=$(ask_to_user "Please enter a random input and press enter:")
+    echo "Your part of the input is: '$CONTRIBUTION_RANDOM_INPUT'. Generating a random part..."
+    CONTRIBUTION_RANDOM_INPUT="${CONTRIBUTION_RANDOM_INPUT}\n$(head -c 64 /dev/urandom | md5sum)"
+    echo
+    echo "The generation of the contribution will take a while... So, be patient and don't close the terminal until the process is finished."
+    echo
+    snarkjs zkc $LAST_CONTRIBUTION_FILE $CURRENT_CONTRIBUTION_FILE -e="$CONTRIBUTION_RANDOM_INPUT"
+    [ $? -ne 0 ] && {
+        echo
+        echo "Error generating contribution, please retry or ask for support"
+        exit 1
+    } || {
+        echo
+        echo "Done! Your contribution generated in $CURRENT_CONTRIBUTION_FILE"
+    }
+    echo
+}
+
+append_hash_to_contributions() {
+    echo
+    echo "Computing your contribution hash..."
+    echo
+
+    local contribution_hash=$(get_file_hash "$1")
+    local contribution_filepath=$(basename -- "$1")
+    local contribution_line="$contribution_filepath:$contribution_hash"
+    # calculate the target line to append the contribution hash
+    total_lines=$(wc -l <"$CONTRIBUTION_FILE")
+    contribution_target_line=$((total_lines - 6))
+    last_contribution_target_line=$((total_lines))
+    # create a temporary file
+    temp_file=$(mktemp)
+    # copy lines up to the target line to the temporary file
+    head -n "$contribution_target_line" "$CONTRIBUTION_FILE" >"$temp_file"
+    # append the new content
+    echo "$contribution_line" >>"$temp_file"
+    # append the remaining lines after the new content
+    tail -n +$((contribution_target_line + 1)) "$CONTRIBUTION_FILE" >>"$temp_file"
+    # replace the original file with the temporary file including the new
+    # last contribution hash
+    sed "${last_contribution_target_line}s/.*/$contribution_line/" $temp_file >"$CONTRIBUTION_FILE"
+}
+
+init_contribution() {
+    intro_message
+    prompt_env_inputs
+    original_contribution_path="$CONTRIBUTIONS_PATH"
+    contribution_file_names=($(ls -1p $CONTRIBUTIONS_PATH | grep / | sed 's:/*$::'))
+    for circuit_folder in "${contribution_file_names[@]}"; do
+        CONTRIBUTION_FILE="$original_contribution_path/$circuit_folder/CONTRIBUTIONS.md"
+        CONTRIBUTIONS_PATH="$original_contribution_path/$circuit_folder"
+        echo "Checking if you are already contributing to '$circuit_folder' zk-ceremony..."
+        echo "Checking if $CONTRIBUTION_FILE exists..."
+        # get the last contribution zkey file from the contributions file
+        if [ ! -f "$CONTRIBUTION_FILE" ]; then
+            error "contribution file does not exists, is the ceremony initialized?"
+            exit 1
+        fi
+
+        LAST_CONTRIBUTION_HASH=$(get_last_contribution_hash "$CONTRIBUTION_FILE")
+        echo "Last contribution hash: $LAST_CONTRIBUTION_HASH"
+        LAST_CONTRIBUTION_FILE=$(get_last_contribution_file_path "$circuit_folder" "$CONTRIBUTIONS_PATH")
+        echo "Last contribution file: $LAST_CONTRIBUTION_FILE"
+
+        echo "You are going to contribute to '$CEREMONY_BRANCH' zk-ceremony process!"
+        echo " - You are using $LAST_CONTRIBUTION_FILE as last contribution file ($HASH: $LAST_CONTRIBUTION_HASH)"
+
+        echo "Downloading artifacts..."
+        git config lfs.fetchinclude "${LAST_CONTRIBUTION_FILE##./}"
+        git lfs pull
+
+        check_contribute_env "$circuit_folder" || error "contribute env failed"
+        echo " - Your contribution will be saved in $CURRENT_CONTRIBUTION_FILE file"
+        echo
+        echo "Now, the script will prompt to you for an random input to generate the new contribution."
+        echo "This process will take a while... So, be patient and don't close the terminal until the process is finished."
+        make_contribution || error "contribution failed"
+        append_hash_to_contributions "$CURRENT_CONTRIBUTION_FILE" "$circuit_folder"
+    done
+
+    echo "Uploading and committing your contribution..."
+    echo "$original_contribution_path"
+    git add $original_contribution_path &&
+        git commit -m "Contribution: from $NEW_BRANCH_NAME to '$CEREMONY_BRANCH' ceremony"
+    git push -f origin $NEW_BRANCH_NAME
+    repo_name=$(basename "$GITHUB_REPO")
+    # Ensure the repository is set explicitly in the PR creation command
+    gh pr create --repo "$GITHUB_REPO" --title "Contribution: from $NEW_BRANCH_NAME to '$CEREMONY_BRANCH' ceremony" --body "" --base "$CEREMONY_BRANCH" --head "$NEW_BRANCH_NAME" || {
+        echo "Failed to create pull request"
+        exit 1
+    }
+
+    echo
+    echo "Done! Your contribution has been published!"
+    echo "Thanks for your contribution! :)"
+    echo
+
+}
+
+init_contribution

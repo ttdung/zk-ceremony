@@ -1,0 +1,35 @@
+name: Verify contribution
+on: 
+  pull_request_target:
+    branches:
+      - ceremony/*
+
+permissions: write-all
+
+jobs:
+  verify-contribution:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v4
+    - name: Build toolkit
+      run: |
+        docker build . -q --target zk-ceremony --tag iden3/zk-ceremony
+    - name: Checkout the fork
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Checkout LFS objects
+      run: git lfs checkout
+    - name: Run toolkit
+      run: |
+        docker run --rm -qt -v ./:/app --env-file ./ceremony.env iden3/zk-ceremony verify
+    - name: Merge PR branch
+      if: success() && contains(github.event.pull_request.title, 'Contribution:')
+      run: |
+        gh pr merge --admin --squash "$PR_URL" \
+        || gh pr close -c "Failed, likely another contribution was merged concurrently and yours was lost, please restart your contribution from scratch" "$PR_URL"
+      env:
+        PR_URL: ${{github.event.pull_request.html_url}}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

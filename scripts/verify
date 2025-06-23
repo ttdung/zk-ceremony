@@ -1,0 +1,34 @@
+#!/bin/bash
+# set -x
+
+. /Users/thanhle/Work/support/zk-ceremony/scripts/tools.sh
+
+verify_last_contribution() {
+    original_contribution_path="$CONTRIBUTIONS_PATH"
+    contribution_file_names=($(ls -1p $CONTRIBUTIONS_PATH | grep / | sed 's:/*$::'))
+    for circuit_folder in "${contribution_file_names[@]}"; do
+        CONTRIBUTION_FILE="$original_contribution_path/$circuit_folder/CONTRIBUTIONS.md"
+        CONTRIBUTIONS_PATH="$original_contribution_path/$circuit_folder"
+        if [ ! -f "$CONTRIBUTION_FILE" ]; then
+            error "contribution file does not exists, is the ceremony initialized?"
+        else
+            last_contribution_hash=$(get_last_contribution_hash "$CONTRIBUTION_FILE")
+            echo "Last contribution hash: $last_contribution_hash"
+            last_contribution_zk_file=$(get_last_contribution_file_path "$circuit_folder" "$CONTRIBUTIONS_PATH")
+            echo "Last contribution file: $last_contribution_zk_file"
+        fi
+
+        mkdir -p $OUTPUT_PATH
+        r1cs_file=$CONTRIBUTIONS_PATH/$circuit_folder.r1cs
+
+        if [ "$(get_file_hash "$last_contribution_zk_file")" == "<check CONTRIBUTIONS.md file>" ]; then
+            error "no contributions"
+        fi
+        if [ "$(get_file_hash "$last_contribution_zk_file")" != "$last_contribution_hash" ]; then
+            error "the last contribution file has been modified, please check the CONTRIBUTIONS.md file"
+        fi
+        snarkjs zkey verify $r1cs_file ./circuits/powersOfTau28_hez_final_18.ptau $last_contribution_zk_file
+    done
+}
+
+verify_last_contribution

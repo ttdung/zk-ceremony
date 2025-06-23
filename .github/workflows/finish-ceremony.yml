@@ -1,0 +1,36 @@
+name: Finish ceremony
+on:
+  pull_request:
+    types: [closed, reopened]
+jobs:
+  # print:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Print GitHub Context
+  #       run: |
+  #         echo "${{ toJson(github) }}"
+
+  finish-ceremony:
+    if: ${{ github.event.pull_request.merged == false && github.actor == github.event.pull_request.assignee.login && contains(github.event.pull_request.labels.*.name, 'on-going-ceremony') && startsWith(github.event.pull_request.head.ref, 'ceremony/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Checkout LFS objects
+        run: git lfs checkout
+      - name: Run toolkit
+        run: |
+          docker build . -q --target zk-ceremony --tag iden3/zk-ceremony
+          docker run --rm -qt -v ./:/app --env-file ./ceremony.env iden3/zk-ceremony finish
+      - name: Commit ceremony artifacts
+        if: ${{ success() }}
+        uses: stefanzweifel/git-auto-commit-action@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          commit_message: Finish '${{ github.event.pull_request.head.ref }}' ceremony
+          commit_options: "--no-verify"
+          commit_user_name: ${{ github.actor }}
