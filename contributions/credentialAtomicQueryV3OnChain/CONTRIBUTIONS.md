@@ -1,0 +1,15 @@
+### credentialAtomicQueryV3OnChain artifacts
+
+- [r1cs](./contributions/credentialAtomicQueryV3OnChain/credentialAtomicQueryV3OnChain.r1cs) - `bc1f8dd0924d2dd1e394715afd470309bbd8a3407d82ab29fc3c6fbae63078ea1f1538a46e175ab989683cc43a6060d24f417a3ba9992b75a7cd1fa65058553a`
+- [wasm](./contributions/credentialAtomicQueryV3OnChain/credentialAtomicQueryV3OnChain.wasm) - `1734dff30416cafd875ce4c0cff10d91bebb6ed97ab436bf5dbbec19b46d491a94bcbd84b81269eba38441b632d23440cc4f08613c73f88eb33f0d85e24b4280`
+
+### Contributions for credentialAtomicQueryV3OnChain circuit
+
+```
+credentialAtomicQueryV3OnChain_initial_contribution.zkey:cd99bfd72056a8df9cfa8e67ad91cd98195baeac2e263dd1d501d16916b20b7d1e1d74fd5096a19bb7b63be87d3d57a7b1793aabe93067449c5faab4e5975ebe
+```
+
+### Last contribution
+```
+
+```
