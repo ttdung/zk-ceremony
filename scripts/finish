@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #. /Users/thanhle/Work/support/zk-ceremony/ceremony.env
-. /Users/thanhle/Work/support/zk-ceremony/scripts/tools.sh
+. /Users/mmtvt/src/zk-ceremony/scripts/tools.sh
 # set -x
 
 finish_and_verify() {
@@ -76,5 +76,5 @@ finish_ceremony() {
     done
 }
 
-INPUT_PTAU_PATH=/Users/thanhle/Work/support/zk-ceremony/circuits/powersOfTau28_hez_final_18.ptau
+INPUT_PTAU_PATH=/Users/mmtvt/src/zk-ceremony/circuits/powersOfTau28_hez_final_18.ptau
 finish_ceremony

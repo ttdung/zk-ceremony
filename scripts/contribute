@@ -2,7 +2,7 @@
 # set -u
 # set -x
 
-GITHUB_REPO="legiangthanh/zk-ceremony"
+GITHUB_REPO="ttdung/zk-ceremony"
 
 intro_message() {
 
@@ -29,7 +29,7 @@ prompt_env_inputs() {
         CEREMONY_BRANCH="$BRANCH"
     fi
 
-    read -p "Enter the name of the new bracnh (by default '$CEREMONY_BRANCH'): " NEW_BRANCH_NAME
+    read -p "Enter the name of the new contribution bracnh ( != $CEREMONY_BRANCH): " NEW_BRANCH_NAME
 
     echo "Now you need to login to your GitHub account to authenticate the process."
     echo " - Don't worry, just copy the URL shown in the terminal and paste it in your browser."
@@ -49,7 +49,7 @@ prompt_env_inputs() {
     git config --global user.email $CONTRIBUTOR_NAME@users.noreply.github.com
 
     repo_name=$(basename "$GITHUB_REPO")
-    git clone "https://github.com/legiangthanh/zk-ceremony.git" ./ceremony --branch $CEREMONY_BRANCH --depth 2 || {
+    git clone "https://github.com/ttdung/zk-ceremony.git" ./ceremony --branch $CEREMONY_BRANCH --depth 2 || {
         echo "Failed to clone forked repository"
         exit 1
     }
