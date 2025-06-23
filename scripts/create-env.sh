@@ -41,8 +41,8 @@ ceremony_branch=$(ask_to_user "Please enter the name of the ceremony (and its br
 #contributions_path=$(ask_to_user "Please enter the path to the folder to store the contributions files (by default './contributions'): " "./contributions")
 #output_path=$(ask_to_user "Please enter the path to the folder to store the resulting files (by default './results'): " "./results")
 target_circuits=$(ask_to_user "Please enter the list of iden3 circuits to be used in the ceremony (by default 'authV3,credentialAtomicQueryV3,credentialAtomicQueryV3OnChain'): " "authV3,credentialAtomicQueryV3,credentialAtomicQueryV3OnChain")
-contributions_path= "./contributions"
-output_path="./results"
+contributions_path= "contributions"
+output_path="results"
 
 echo "TARGET_CIRCUITS=$target_circuits
 CEREMONY_BRANCH=ceremony/$ceremony_branch

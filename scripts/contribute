@@ -8,8 +8,8 @@ intro_message() {
     echo
     echo "Welcome to the zk-ceremony contribution process 1!"
     echo "To start your contribution you need to provide the following information:"
-    echo " - The github repository of the ceremony (by default '$GITHUB_REPO')"
     echo " - Login to your GitHub account (commits will use your github username)"
+    echo " - The github repository of the ceremony (by default '$GITHUB_REPO')"
 }
 
 prompt_env_inputs() {
@@ -22,13 +22,14 @@ prompt_env_inputs() {
     echo "$branches"
     echo
     CEREMONY_BRANCH="$(echo "$branches" | head -n 1)"
-    
+
     read -p "Enter the name of one of the 'on-going' ceremonies and branches shown above (default $CEREMONY_BRANCH): " BRANCH
+    
     if [ -n "$BRANCH" ]; then
         CEREMONY_BRANCH="$BRANCH"
     fi
 
-    read -p "Enter the name of the new bracnh (by default '$CEREMONY_BRANCH'): " NEW_BRANCH_NAME
+    read -p "Enter the name of the new contribution branch : " NEW_BRANCH_NAME
 
     echo "Now you need to login to your GitHub account to authenticate the process."
     echo " - Don't worry, just copy the URL shown in the terminal and paste it in your browser."
