@@ -1,0 +1,4 @@
+# 'ceremony/abc' ceremony results
+- [./results/credentialAtomicQueryV3/credentialAtomicQueryV3.wasm](./credentialAtomicQueryV3.wasm) - `d4f4905a0dff7a06e6c49974613f2a52257a16cc856cbf8aeb75a0ac286f01d61107c14b64df8ea7be4bf919d71aea1bd05f23732bd76d60f518d6e7e4b27c34`
+- [./results/credentialAtomicQueryV3/credentialAtomicQueryV3_proving_key.zkey](./credentialAtomicQueryV3_proving_key.zkey) - `e7e8789bc5204fcc6d25254a4654a4698a606f8fc0ebc98c0bec64ca3b27e5f75575ea2ca44b7c89454c921b4f8c8e07af011d6dd6f254eab9e11e70cca3dc81`
+- [./results/credentialAtomicQueryV3/credentialAtomicQueryV3_verification_key.json](./credentialAtomicQueryV3_verification_key.json) - `b6063403d733bcf5ef862af70895870712cc9c4e5dc1e6738fe77d33a9b50a2d3d6d8b0154941e4ec003c6bb259eee59f4c7d5cf8cf9b3a8b66bf0dcae0d71f2`

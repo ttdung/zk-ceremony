@@ -93,3 +93,7 @@ init_ceremony() {
 }
 
 init_ceremony $1
+
+    git add . &&
+    git commit -m "Add contributions" &&
+    git push origin $CEREMONY_BRANCH

@@ -1,3 +1,6 @@
+GITHUB_REPO="ttdung/zk-ceremony"
+CEREMONY_MAIN_BRANCH="main"
+
 ask_to_user() {
     local answer=""
     if [ -n "$2" ]; then
@@ -35,9 +38,11 @@ if ! command -v git-lfs &>/dev/null; then
 fi
 
 ceremony_branch=$(ask_to_user "Please enter the name of the ceremony (and its branch default (ceremony/v3-circuits): " "v3-circuits")
-contributions_path=$(ask_to_user "Please enter the path to the folder to store the contributions files (by default './contributions'): " "./contributions")
-output_path=$(ask_to_user "Please enter the path to the folder to store the resulting files (by default './results'): " "./results")
+#contributions_path=$(ask_to_user "Please enter the path to the folder to store the contributions files (by default './contributions'): " "./contributions")
+#output_path=$(ask_to_user "Please enter the path to the folder to store the resulting files (by default './results'): " "./results")
 target_circuits=$(ask_to_user "Please enter the list of iden3 circuits to be used in the ceremony (by default 'authV3,credentialAtomicQueryV3,credentialAtomicQueryV3OnChain'): " "authV3,credentialAtomicQueryV3,credentialAtomicQueryV3OnChain")
+contributions_path= "./contributions"
+output_path="./results"
 
 echo "TARGET_CIRCUITS=$target_circuits
 CEREMONY_BRANCH=ceremony/$ceremony_branch
@@ -48,3 +53,10 @@ git checkout -b ceremony/$ceremony_branch &&
     git add -f ceremony.env &&
     git commit -m "Initialize ceremony" &&
     git push origin ceremony/$ceremony_branch
+
+# Ensure the repository is set explicitly in the PR creation command
+CEREMONY_BRANCH=ceremony/$ceremony_branch
+gh pr create --repo "$GITHUB_REPO" --title "Contribution: from $CEREMONY_BRANCH to '$CEREMONY_MAIN_BRANCH' ceremony" --body "" --base "$CEREMONY_MAIN_BRANCH" --head "$CEREMONY_BRANCH" || {
+    echo "Failed to create pull request"
+    exit 1
+}
