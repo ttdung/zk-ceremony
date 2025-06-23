@@ -77,7 +77,7 @@ check_contribute_env() {
 
     echo
     while curl -s -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/$GITHUB_REPO/pulls" |
-        jq '.[].title' | grep Contribution | grep $CEREMONY_BRANCH; do
+        jq '.[].title' | grep Contribution | grep $NEW_BRANCH_NAME; do
         echo "Oops, someone else started their contribution to this ceremony almost exactly at the same time as you."
         echo "They will finish in a few minutes max, so let's sleep 30s and check again."
         sleep 30
