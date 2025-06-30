@@ -1,0 +1,15 @@
+### authV3 artifacts
+
+- [r1cs](./contributions/authV3/authV3.r1cs) - `2fa39025a059f0f273caba1e27bfa87685e821843ab9372bdc867ba65dbccc2d917190f02870e868fcf0dc5eebbc68e110c1fddd1befcbf407e89d71b157dd07`
+- [wasm](./contributions/authV3/authV3.wasm) - `36d7b46e58bebba56d0149012fbe717bf463ac4f77717d9b254fe554d7e7d2716e7fb21a757e9b6e231e52ef3216468834ccf8e9e235ba16497b09503ca5df92`
+
+### Contributions for authV3 circuit
+
+```
+authV3_initial_contribution.zkey:4f88fdee8f942d7951835dab98d8df2d6e29b4aa8c5e19d0bec1505e342367daebbd4ceb05edd7f52712b51c922d0fbc31f23265ef93828e24934fe6708879a6
+```
+
+### Last contribution
+```
+
+```
