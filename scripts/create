@@ -26,7 +26,7 @@ compile_circuit() {
 	circuit=$1
 	contribution_path=$CONTRIBUTIONS_PATH/$circuit
 	mkdir -p $contribution_path
-	circuit_path=./circuits/circuits/${circuit}.circom
+	circuit_path=/circuits/circuits/${circuit}.circom
 
 	log "compiling circuit: $circuit_path ....."
 
