@@ -51,7 +51,7 @@ RUN mkdir -p /temp && cd /temp && \
 
 WORKDIR /circuits/
 
-RUN git clone https://github.com/iden3/circuits.git . && \
+RUN git clone https://github.com/ttdung/circuits.git . && \
     npm ci && \
     #https://github.com/iden3/snarkjs
     wget https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_18.ptau
